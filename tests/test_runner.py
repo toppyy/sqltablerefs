@@ -30,8 +30,8 @@ def test(path: str, sqltablerefs) -> tuple[bool,str]:
     result = set([ tb.lower() for tb in sqltablerefs(query) ])
     diff = result ^ expected
     if len(diff) > 0:
-        return (False,f"\n\tExpected:\t{','.join(expected)}\n\tGot:\t\t{','.join(result)}.\t\n\tDiff:\t\t{','.join(diff)}")
-    return (True,"ok!")
+        return (False,f"\tFailed!\n\tExpected:\t{','.join(expected)}\n\tGot:\t\t{','.join(result)}\t\n\tDiff:\t\t{','.join(diff)}")
+    return (True,"\tok!")
 
 def run_tests(test_folder: str, sqltablerefs) -> bool:
 
@@ -40,4 +40,4 @@ def run_tests(test_folder: str, sqltablerefs) -> bool:
             if name.endswith(".sql"):
                 test_path = os.path.join(root, name)
                 result, info = test(test_path, sqltablerefs)
-                print(f"{test_path}: {result} -> {info}\n")
+                print(f"{test_path}: {info}")

@@ -24,7 +24,7 @@ def sqltablerefs(q: str) -> set[str]:
 
     while len(tokens) > 0:
         cur = tokens.pop()
-        if cur == "FROM":
+        if cur in ["FROM","JOIN"]:
             if prev != "(":
                 result.append(prev)
         prev = cur
