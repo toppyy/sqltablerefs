@@ -1,7 +1,5 @@
 import re
 
-PAT_MULTIPLE_SPACES = ""
-
 def preprocess(query: str) -> str:
     query = query.replace("\n", " ")
     query = query.replace("\t", " ")
