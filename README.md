@@ -9,9 +9,9 @@ Creates false positives for aliases :(
 
 Provide a file to scan or 'test' for tests. Optionally a filename to store output to.
 
-    python3 query.sql|test [output.txt]
+    python3 main.py query.sql|test [output.txt]
 
 
 For example:
 
-    python3 my_query.sql my_results.txt
+    python3 main.py my_query.sql my_results.txt
