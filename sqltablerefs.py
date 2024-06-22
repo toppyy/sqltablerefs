@@ -16,6 +16,69 @@ def preprocess(query):
 def tokenise(query):
     return [token for token in query.split(" ") if len(token) > 0]
 
+
+def peek(arr):
+    if len(arr) == 0:
+        raise "Peeked at an empty array!"
+    return arr[0]
+
+def eat_subquery(tokens):
+    # Eat tokens until the subquery/expression in parenthesis is removed
+    cur = peek(tokens)
+    while cur != ')':
+        if cur == '(':
+            tokens.pop(0)
+            tokens = eat_subquery(tokens)
+        tokens.pop(0)
+        cur = peek(tokens)
+    return tokens
+
+
+def find_CTEs(tokens):
+    # Returns the aliases for CTEs (if any)
+    # aliases are lowercased for case-insensitive comparison
+    if len(tokens) == 0:
+        return set()
+
+    # Check if the query has a WITH-statement
+    tokens_cpy = tokens.copy()
+
+    while len(tokens_cpy) > 0:
+        if peek(tokens_cpy) == 'WITH':
+            break
+        tokens_cpy.pop(0)
+
+    if len(tokens_cpy) == 0:
+        # It does not -> return an empty set
+        return set()
+
+    # Remove 'WITH'
+    tokens_cpy.pop(0)
+
+    # If the SQL is syntactically correct
+    # there first alias is the next token
+    CTE = [tokens_cpy.pop(0)]
+    tokens_cpy.pop(0) # AS
+
+    cur = tokens_cpy.pop(0)
+
+    while  len(tokens_cpy) > 0:
+        
+        if cur == '(':
+            tokens_cpy = eat_subquery(tokens_cpy)
+        cur = tokens_cpy.pop(0)
+
+        if cur == ')':
+            cur = tokens_cpy.pop(0)
+            if cur == 'SELECT':
+                break
+
+            CTE.append(tokens_cpy.pop(0))
+
+    return set([alias.lower() for alias in CTE])
+
+
+
 def sqltablerefs(q):
 
     q       = preprocess(q)
@@ -23,10 +86,12 @@ def sqltablerefs(q):
     result = []
     prev = tokens.pop()
 
+    CTEs = find_CTEs(tokens)
+
     while len(tokens) > 0:
         cur = tokens.pop()
         if cur.upper() in ["FROM","JOIN"]:
-            if prev != "(":
+            if prev != "(" and prev.lower() not in CTEs:
                 result.append(prev)
         prev = cur
     return set(result)
@@ -38,7 +103,7 @@ if __name__ == "__main__":
         raise Exception("Either specify a .sql file or 'test' to run tests.")
 
     if sys.argv[1] == 'test':
-        run_tests("./tests/tests/", sqltablerefs)
+        run_tests("./tests/queries/", sqltablerefs)
         exit(0)
 
     with open(sys.argv[1], "r") as f:

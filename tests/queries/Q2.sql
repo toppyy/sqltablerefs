@@ -1,5 +1,5 @@
 /*
-    expected: employee, employee_ranking
+    expected: employee
 */
 WITH employee_ranking AS (
   SELECT
