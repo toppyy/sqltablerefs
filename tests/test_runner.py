@@ -1,6 +1,6 @@
 import os
 
-def parse_expected_value(test_data: str) -> tuple[list[str], str]:
+def parse_expected_value(test_data):
     
     if test_data[:2] != '/*':
         raise Exception(f"Testdata is expected to start with '/*', got '{test_data[:2]}' instead")
@@ -18,13 +18,13 @@ def parse_expected_value(test_data: str) -> tuple[list[str], str]:
         (set(expected.split(",")),test_data[(comment_end+2):])
     )
 
-def parse_test_file(path: str) -> dict:
+def parse_test_file(path):
     with open(path, "r") as file:
         test_data = file.read()
     return parse_expected_value(test_data)
     
 
-def test(path: str, sqltablerefs) -> tuple[bool,str]:
+def test(path, sqltablerefs):
 
     expected,query = parse_test_file(path)
     result = set([ tb.lower() for tb in sqltablerefs(query) ])
@@ -33,9 +33,9 @@ def test(path: str, sqltablerefs) -> tuple[bool,str]:
         return (False,f"\tFailed!\n\tExpected:\t{','.join(expected)}\n\tGot:\t\t{','.join(result)}\t\n\tDiff:\t\t{','.join(diff)}")
     return (True,"\tok!")
 
-def run_tests(test_folder: str, sqltablerefs) -> bool:
+def run_tests(test_folder, sqltablerefs):
 
-    for root, dirs, files in os.walk(".", topdown=False):
+    for root, dirs, files in os.walk(test_folder, topdown=False):
         for name in files:
             if name.endswith(".sql"):
                 test_path = os.path.join(root, name)
