@@ -88,7 +88,7 @@ def sqltablerefs(q):
 
     while len(tokens) > 0:
         cur = tokens.pop()
-        if cur.upper() in ["FROM","JOIN"]:
+        if cur.upper() in ["FROM","JOIN","INTO"]:
             if prev != "(" and prev.lower() not in CTEs:
                 result.append(prev)
         prev = cur
