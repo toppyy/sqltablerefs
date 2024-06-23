@@ -28,10 +28,10 @@ def eat_subquery(tokens):
     while cur != ')':
         if cur == '(':
             tokens.pop(0)
-            tokens = eat_subquery(tokens)
+            eat_subquery(tokens)
         tokens.pop(0)
         cur = peek(tokens)
-    return tokens
+
 
 
 def find_CTEs(tokens):
@@ -41,40 +41,38 @@ def find_CTEs(tokens):
         return set()
 
     # Check if the query has a WITH-statement
-    tokens_cpy = tokens.copy()
-
-    while len(tokens_cpy) > 0:
-        if peek(tokens_cpy) == 'WITH':
+    while len(tokens) > 0:
+        if peek(tokens) == 'WITH':
             break
-        tokens_cpy.pop(0)
+        tokens.pop(0)
 
-    if len(tokens_cpy) == 0:
+    if len(tokens) == 0:
         # It does not -> return an empty set
         return set()
 
     # Remove 'WITH'
-    tokens_cpy.pop(0)
+    tokens.pop(0)
 
     # If the SQL is syntactically correct
     # there first alias is the next token
-    CTE = [tokens_cpy.pop(0)]
-    tokens_cpy.pop(0) # AS
+    CTE = [tokens.pop(0)]
+    tokens.pop(0) # AS
 
-    cur = tokens_cpy.pop(0)
+    cur = tokens.pop(0)
 
-    while  len(tokens_cpy) > 0:
+    while  len(tokens) > 0:
         
         if cur == '(':
-            tokens_cpy = eat_subquery(tokens_cpy)
-        cur = tokens_cpy.pop(0)
+            eat_subquery(tokens)
+        cur = tokens.pop(0)
 
         if cur == ')':
-            cur = tokens_cpy.pop(0)
+            cur = tokens.pop(0)
             if cur == 'SELECT':
                 break
 
-            CTE.append(tokens_cpy.pop(0))
-
+            CTE.append(tokens.pop(0))
+    
     return set([alias.lower() for alias in CTE])
 
 
@@ -83,10 +81,10 @@ def sqltablerefs(q):
 
     q       = preprocess(q)
     tokens  = tokenise(q)    
-    result = []
-    prev = tokens.pop()
+    result  = []
+    CTEs    = find_CTEs(tokens.copy())
 
-    CTEs = find_CTEs(tokens)
+    prev = tokens.pop()
 
     while len(tokens) > 0:
         cur = tokens.pop()
